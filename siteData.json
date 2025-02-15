@@ -1,0 +1,65 @@
+{
+  "enableSearch": true,
+  "pages": [
+    {
+      "src": "404.md",
+      "title": "Page not found",
+      "headings": {},
+      "headingKeywords": {}
+    },
+    {
+      "src": "SQLite.md",
+      "title": "SQLite",
+      "headings": {
+        "sqlite3-provider": "SQLite3 Provider",
+        "sqlite3insertgenerator": "SQLite3InsertGenerator"
+      },
+      "headingKeywords": {}
+    },
+    {
+      "src": "databaseProvider.md",
+      "title": "Home Page",
+      "headings": {
+        "databaseprovider": "DatabaseProvider",
+        "provideradapter": "ProviderAdapter",
+        "sqlprovideradapter": "SQLProviderAdapter"
+      },
+      "headingKeywords": {}
+    },
+    {
+      "src": "globalState.md",
+      "title": "GlobalState",
+      "headings": {
+        "globalstate-class": "GlobalState Class"
+      },
+      "headingKeywords": {}
+    },
+    {
+      "src": "index.md",
+      "title": "SQLancer Main",
+      "headings": {
+        "sqlancer-main": "SQLancer  Main.",
+        "key-components": "Key Components",
+        "dbmsexecutor-run": "DBMSExecutor.run()"
+      },
+      "headingKeywords": {}
+    },
+    {
+      "src": "query.md",
+      "title": "Query, SQLQueryAdapter",
+      "headings": {
+        "query": "Query",
+        "sqlqueryadapter": "SQLQueryAdapter"
+      },
+      "headingKeywords": {}
+    },
+    {
+      "src": "statementExecutor.md",
+      "title": "StatementExecutor",
+      "headings": {
+        "statement-executor": "Statement Executor"
+      },
+      "headingKeywords": {}
+    }
+  ]
+}

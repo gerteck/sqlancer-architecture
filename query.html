@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="generator" content="MarkBind 5.5.3">
+    <meta name="viewport" content="width=device-width, initial-scale=1"><title>Query, SQLQueryAdapter</title> <link rel="stylesheet" href="/markbind/css/bootstrap.min.css"> <link rel="stylesheet" href="/markbind/fontawesome/css/all.min.css"><link rel="stylesheet" href="/markbind/css/codeblock-dark.min.css"><link rel="stylesheet" href="/markbind/css/markbind.min.css"><link rel="stylesheet" href="/plugins/markbind-plugin-anchors/markbind-plugin-anchors.css"><link rel="stylesheet" href="/plugins/markbind-plugin-tree/markbind-plugin-tree.css">
+    
+  <link rel="stylesheet" href="/stylesheets/main.css">
+</head>
+<script>
+  const baseUrl = ''
+</script>
+<body >
+<div id="app" data-server-rendered="true"><header sticky=""><div data-v-7c0fd418><nav class="navbar navbar-expand-md d-print-none navbar-dark bg-dark" data-v-7c0fd418><div class="container-fluid" data-v-7c0fd418><div class="navbar-left" data-v-7c0fd418><a href="/index.html" title="Home" class="navbar-brand" data-v-7c0fd418>SQLancer Main</a></div> <div class="navbar-default" data-v-7c0fd418><ul class="navbar-nav me-auto mt-2 mt-lg-0" data-v-7c0fd418> <li data-v-7c0fd418><a href="/databaseProvider.html" class="nav-link" data-v-7c0fd418>DatabaseProvider</a></li> <li data-v-7c0fd418><a href="/globalState.html" class="nav-link" data-v-7c0fd418>GlobalState</a></li> <li data-v-7c0fd418><a href="/query.html" class="nav-link" data-v-7c0fd418>Query, SQLQueryAdapter</a></li> <li data-v-7c0fd418><a href="/statementExecutor.html" class="nav-link" data-v-7c0fd418>StatementExecutor</a></li> <li data-v-7c0fd418><a href="/SQLite.html" class="nav-link" data-v-7c0fd418>SQLite</a></li></ul></div> <!----></div></nav> <div class="lower-navbar-container" style="display:none;" data-v-7c0fd418><!----> <!----></div></div></header> <div id="flex-body"><div id="content-wrapper"><h3 id="query">Query<a href="#query" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h3> <p>The Query class represents a single query string and supports several methods, such as <code class="hljs inline no-lang">getQueryString</code>, <code class="hljs inline no-lang">couldAffectSchema</code> (can add or delete tables), and establishes the abstract method <code class="hljs inline no-lang">execute</code>.</p> <h3 id="sqlqueryadapter">SQLQueryAdapter<a href="#sqlqueryadapter" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h3> <p>The SQLQueryAdapter class is a concrete implementation of the Query interface, designed to execute SQL queries and handle their results. It is used extensively in SQLancer to interact with the database, execute queries, and manage expected errors.</p> <p><strong>Query Execution</strong>: The GlobalState calls execute() or executeAndGet() on the SQLQueryAdapter to execute a query. The SQLQueryAdapter creates a Statement or PreparedStatement depending on whether placeholders (fills) are provided. The query is executed using the Statement or PreparedStatement. If the query is successful, the result is returned to the GlobalState. If the query fails, the SQLQueryAdapter checks if the error is expected using the ExpectedErrors class.</p> <div class="mermaid">
+sequenceDiagram
+    participant GlobalState
+    participant SQLQueryAdapter
+    participant Statement
+    participant PreparedStatement
+    participant ResultSet
+    participant SQLancerResultSet
+    participant ExpectedErrors
+
+    GlobalState-&gt;&gt;SQLQueryAdapter: execute(globalState, fills)
+    SQLQueryAdapter-&gt;&gt;Statement: createStatement() or prepareStatement(fills[0])
+    alt If prepared statement
+        SQLQueryAdapter-&gt;&gt;PreparedStatement: setString(i, fills[i])
+        PreparedStatement-&gt;&gt;SQLQueryAdapter: execute()
+    else
+        Statement-&gt;&gt;SQLQueryAdapter: execute(query)
+    end
+    alt If successful
+        SQLQueryAdapter-&gt;&gt;GlobalState: Return true
+    else
+        SQLQueryAdapter-&gt;&gt;ExpectedErrors: checkException(e)
+        ExpectedErrors--&gt;&gt;SQLQueryAdapter: Return if error is expected
+        SQLQueryAdapter-&gt;&gt;GlobalState: Return false
+    end
+
+    GlobalState-&gt;&gt;SQLQueryAdapter: executeAndGet(globalState, fills)
+    SQLQueryAdapter-&gt;&gt;Statement: createStatement() or prepareStatement(fills[0])
+    alt If prepared statement
+        SQLQueryAdapter-&gt;&gt;PreparedStatement: setString(i, fills[i])
+        PreparedStatement-&gt;&gt;SQLQueryAdapter: executeQuery()
+    else
+        Statement-&gt;&gt;SQLQueryAdapter: executeQuery(query)
+    end
+    alt If successful
+        SQLQueryAdapter-&gt;&gt;ResultSet: Wrap in SQLancerResultSet
+        SQLancerResultSet--&gt;&gt;GlobalState: Return result
+    else
+        SQLQueryAdapter-&gt;&gt;ExpectedErrors: checkException(e)
+        ExpectedErrors--&gt;&gt;SQLQueryAdapter: Return if error is expected
+        SQLQueryAdapter--&gt;&gt;GlobalState: Return null
+    end
+</div></div> <div aria-hidden="true" class="scroll-top-button fa-lg d-print-none" style="display:none;bottom:2%;right:2%;position:fixed;"><i class="fas fa-arrow-circle-up"></i></div></div></div>
+</body><script src="/markbind/js/bootstrap-utility.min.js"></script>
+<script src="/markbind/js/polyfill.min.js"></script>
+<script src="/markbind/js/vue.min.js"></script>
+<script src="/markbind/js/markbind.min.js"></script>
+<script src="query.page-vue-render.js"></script>
+<script>
+  MarkBind.setupWithSearch()
+</script>
+    <script type="module">
+    import mermaid from 'https://unpkg.com/mermaid@10/dist/mermaid.esm.min.mjs';
+    document.addEventListener('DOMContentLoaded', () => {
+      mermaid.initialize({});
+      Vue.directive('mermaid', {
+        inserted: function(el) {
+          mermaid.run({
+            nodes: [el]
+          });
+        }
+      });
+    });
+  </script>
+</html>

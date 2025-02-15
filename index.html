@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="generator" content="MarkBind 5.5.3">
+    <meta name="viewport" content="width=device-width, initial-scale=1"><title>SQLancer Main</title> <link rel="stylesheet" href="/markbind/css/bootstrap.min.css"> <link rel="stylesheet" href="/markbind/fontawesome/css/all.min.css"><link rel="stylesheet" href="/markbind/css/codeblock-dark.min.css"><link rel="stylesheet" href="/markbind/css/markbind.min.css"><link rel="stylesheet" href="/plugins/markbind-plugin-anchors/markbind-plugin-anchors.css"><link rel="stylesheet" href="/plugins/markbind-plugin-tree/markbind-plugin-tree.css">
+    
+  <link rel="stylesheet" href="/stylesheets/main.css">
+</head>
+<script>
+  const baseUrl = ''
+</script>
+<body >
+<div id="app" data-server-rendered="true"><header sticky=""><div data-v-7c0fd418><nav class="navbar navbar-expand-md d-print-none navbar-dark bg-dark" data-v-7c0fd418><div class="container-fluid" data-v-7c0fd418><div class="navbar-left" data-v-7c0fd418><a href="/index.html" title="Home" class="navbar-brand" data-v-7c0fd418>SQLancer Main</a></div> <div class="navbar-default" data-v-7c0fd418><ul class="navbar-nav me-auto mt-2 mt-lg-0" data-v-7c0fd418> <li data-v-7c0fd418><a href="/databaseProvider.html" class="nav-link" data-v-7c0fd418>DatabaseProvider</a></li> <li data-v-7c0fd418><a href="/globalState.html" class="nav-link" data-v-7c0fd418>GlobalState</a></li> <li data-v-7c0fd418><a href="/query.html" class="nav-link" data-v-7c0fd418>Query, SQLQueryAdapter</a></li> <li data-v-7c0fd418><a href="/statementExecutor.html" class="nav-link" data-v-7c0fd418>StatementExecutor</a></li> <li data-v-7c0fd418><a href="/SQLite.html" class="nav-link" data-v-7c0fd418>SQLite</a></li></ul></div> <!----></div></nav> <div class="lower-navbar-container" style="display:none;" data-v-7c0fd418><!----> <!----></div></div></header> <div id="flex-body"><div id="content-wrapper"><h3 id="sqlancer-main">SQLancer  Main.<a href="#sqlancer-main" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h3> <p>First let's look at the main entry point and core logic for SQLancer. Test DBMS by generating random SQL queries and databases to check for bugs or inconsistencies in DBMS.</p> <h3 id="key-components"><strong>Key Components</strong><a href="#key-components" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h3> <p>The <code class="hljs inline no-lang">Main</code> class serves as the entry point, parsing command-line arguments, initializing DBMS providers, and managing concurrent test execution. The <code class="hljs inline no-lang">StateLogger</code> handles logging of queries, errors, and test details to files, while the <code class="hljs inline no-lang">QueryManager</code> executes SQL queries, tracks success/failure, and logs results. The <code class="hljs inline no-lang">DBMSExecutor</code> tests specific DBMSs by initializing databases, generating random queries, and ensuring reproducibility with fixed random seeds. The <code class="hljs inline no-lang">DatabaseProvider</code> interface is implemented by DBMS-specific providers (e.g., MySQLProvider) to manage databases, generate queries, and handle configurations. The <code class="hljs inline no-lang">GlobalState</code> represents the database and test case state, including the database name, random seed, connection, and schema. The workflow involves parsing arguments, configuring test parameters, generating and executing random queries, and logging results. If a bug is found, a reducer minimizes the test case for debugging. Progress monitoring tracks query execution, database creation, and success rates. Concurrency is achieved via a thread pool, and reproducibility is ensured through fixed random seeds. Example usage: <code class="hljs inline no-lang">java -jar sqlancer.jar mysql --num-tries 100 --num-threads 4 --log-each-select</code> tests MySQL with 100 cases, 4 threads, and logs each query.</p> <br> <h4 id="main-class">Main Class<a href="#main-class" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h4> <div class="mermaid">
+sequenceDiagram
+    participant Main
+    participant JCommander
+    participant ServiceLoader
+    participant DBMSExecutorFactory
+    participant DBMSExecutor
+    participant ExecutorService
+
+    Main-&gt;&gt;JCommander: Parse command-line arguments
+    JCommander--&gt;&gt;Main: Return parsed options
+    Main-&gt;&gt;ServiceLoader: Load DBMS providers
+    ServiceLoader--&gt;&gt;Main: Return list of providers
+    Main-&gt;&gt;DBMSExecutorFactory: Create executor factory for selected DBMS
+    DBMSExecutorFactory--&gt;&gt;Main: Return executor factory
+    Main-&gt;&gt;ExecutorService: Initialize thread pool
+    loop For each test case
+        Main-&gt;&gt;DBMSExecutorFactory: Create DBMSExecutor
+        DBMSExecutorFactory--&gt;&gt;Main: Return DBMSExecutor
+        Main-&gt;&gt;DBMSExecutor: Run test case (see Diagram 2)
+    end
+    Main-&gt;&gt;ExecutorService: Shutdown thread pool
+    ExecutorService--&gt;&gt;Main: Confirm shutdown
+</div> <h3 id="dbmsexecutor-run">DBMSExecutor.run()<a href="#dbmsexecutor-run" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h3> <div class="mermaid">
+sequenceDiagram
+    participant DBMSExecutor
+    participant GlobalState
+    participant DatabaseProvider
+    participant StateLogger
+    participant QueryManager
+    participant Reducer
+
+    DBMSExecutor-&gt;&gt;GlobalState: Initialize global state
+    DBMSExecutor-&gt;&gt;DatabaseProvider: Create database
+    DatabaseProvider--&gt;&gt;DBMSExecutor: Return database connection
+    DBMSExecutor-&gt;&gt;StateLogger: Initialize logger
+    DBMSExecutor-&gt;&gt;QueryManager: Initialize query manager
+    loop For each query
+        QueryManager-&gt;&gt;DatabaseProvider: Execute query
+        DatabaseProvider--&gt;&gt;QueryManager: Return query result
+        QueryManager-&gt;&gt;StateLogger: Log query and result
+    end
+    alt If bug is found
+        DBMSExecutor-&gt;&gt;Reducer: Reduce test case
+        Reducer--&gt;&gt;DBMSExecutor: Return minimized test case
+        DBMSExecutor-&gt;&gt;StateLogger: Log reduced test case
+    end
+</div> <p>Here is a class diagram for the main class.</p> <span class="image-wrapper"><img src="/assets/main_class.bmp" width="900" height="" loading="eager" class="img-fluid rounded"> <span class="image-caption"></span></span></div> <div aria-hidden="true" class="scroll-top-button fa-lg d-print-none" style="display:none;bottom:2%;right:2%;position:fixed;"><i class="fas fa-arrow-circle-up"></i></div></div></div>
+</body><script src="/markbind/js/bootstrap-utility.min.js"></script>
+<script src="/markbind/js/polyfill.min.js"></script>
+<script src="/markbind/js/vue.min.js"></script>
+<script src="/markbind/js/markbind.min.js"></script>
+<script src="index.page-vue-render.js"></script>
+<script>
+  MarkBind.setupWithSearch()
+</script>
+    <script type="module">
+    import mermaid from 'https://unpkg.com/mermaid@10/dist/mermaid.esm.min.mjs';
+    document.addEventListener('DOMContentLoaded', () => {
+      mermaid.initialize({});
+      Vue.directive('mermaid', {
+        inserted: function(el) {
+          mermaid.run({
+            nodes: [el]
+          });
+        }
+      });
+    });
+  </script>
+</html>

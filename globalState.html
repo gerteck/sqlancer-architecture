@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="generator" content="MarkBind 5.5.3">
+    <meta name="viewport" content="width=device-width, initial-scale=1"><title>GlobalState</title> <link rel="stylesheet" href="/markbind/css/bootstrap.min.css"> <link rel="stylesheet" href="/markbind/fontawesome/css/all.min.css"><link rel="stylesheet" href="/markbind/css/codeblock-dark.min.css"><link rel="stylesheet" href="/markbind/css/markbind.min.css"><link rel="stylesheet" href="/plugins/markbind-plugin-anchors/markbind-plugin-anchors.css"><link rel="stylesheet" href="/plugins/markbind-plugin-tree/markbind-plugin-tree.css">
+    
+  <link rel="stylesheet" href="/stylesheets/main.css">
+</head>
+<script>
+  const baseUrl = ''
+</script>
+<body >
+<div id="app" data-server-rendered="true"><header sticky=""><div data-v-7c0fd418><nav class="navbar navbar-expand-md d-print-none navbar-dark bg-dark" data-v-7c0fd418><div class="container-fluid" data-v-7c0fd418><div class="navbar-left" data-v-7c0fd418><a href="/index.html" title="Home" class="navbar-brand" data-v-7c0fd418>SQLancer Main</a></div> <div class="navbar-default" data-v-7c0fd418><ul class="navbar-nav me-auto mt-2 mt-lg-0" data-v-7c0fd418> <li data-v-7c0fd418><a href="/databaseProvider.html" class="nav-link" data-v-7c0fd418>DatabaseProvider</a></li> <li data-v-7c0fd418><a href="/globalState.html" class="nav-link" data-v-7c0fd418>GlobalState</a></li> <li data-v-7c0fd418><a href="/query.html" class="nav-link" data-v-7c0fd418>Query, SQLQueryAdapter</a></li> <li data-v-7c0fd418><a href="/statementExecutor.html" class="nav-link" data-v-7c0fd418>StatementExecutor</a></li> <li data-v-7c0fd418><a href="/SQLite.html" class="nav-link" data-v-7c0fd418>SQLite</a></li></ul></div> <!----></div></nav> <div class="lower-navbar-container" style="display:none;" data-v-7c0fd418><!----> <!----></div></div></header> <div id="flex-body"><div id="content-wrapper"><h3 id="globalstate-class">GlobalState Class<a href="#globalstate-class" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h3> <p>The GlobalState class is a central component in SQLancer that manages the state of the database, including the connection, schema, options, and logging. It provides methods for executing queries, updating the schema, and managing the overall state of the testing process.</p> <div class="mermaid">
+sequenceDiagram
+    participant DBMSExecutor
+    participant GlobalState
+    participant QueryManager
+    participant Query
+    participant ExecutionTimer
+    participant StateLogger
+    participant Schema
+
+    DBMSExecutor-&gt;&gt;GlobalState: executeStatement(query)
+    GlobalState-&gt;&gt;GlobalState: executePrologue(query)
+    GlobalState-&gt;&gt;StateLogger: writeCurrent(query.getLogString())
+    GlobalState-&gt;&gt;ExecutionTimer: start()
+    GlobalState-&gt;&gt;QueryManager: execute(query)
+    QueryManager-&gt;&gt;Query: execute(globalState)
+    Query--&gt;&gt;QueryManager: Return success
+    QueryManager--&gt;&gt;GlobalState: Return success
+    GlobalState-&gt;&gt;GlobalState: executeEpilogue(query, success, timer)
+    GlobalState--&gt;&gt;DBMSExecutor: Return success
+
+    DBMSExecutor-&gt;&gt;GlobalState: executeStatementAndGet(query)
+    GlobalState-&gt;&gt;GlobalState: executePrologue(query)
+    GlobalState-&gt;&gt;StateLogger: writeCurrent(query.getLogString())
+    GlobalState-&gt;&gt;ExecutionTimer: start()
+    GlobalState-&gt;&gt;QueryManager: executeAndGet(query)
+    QueryManager-&gt;&gt;Query: executeAndGet(globalState)
+    Query--&gt;&gt;QueryManager: Return result
+    QueryManager--&gt;&gt;GlobalState: Return result
+    GlobalState-&gt;&gt;GlobalState: executeEpilogue(query, success, timer)
+    GlobalState--&gt;&gt;DBMSExecutor: Return result
+
+    DBMSExecutor-&gt;&gt;GlobalState: updateSchema()
+    GlobalState-&gt;&gt;GlobalState: readSchema()
+    GlobalState-&gt;&gt;Schema: getDatabaseTables()
+    Schema--&gt;&gt;GlobalState: Return tables
+    GlobalState-&gt;&gt;GlobalState: setSchema(schema)
+    GlobalState--&gt;&gt;DBMSExecutor: Schema updated
+</div> <p><code class="hljs inline no-lang">executeStatement(Query&lt;C&gt; q, String... fills)</code> executes a query and returns a boolean indicating success or failure.</p></div> <div aria-hidden="true" class="scroll-top-button fa-lg d-print-none" style="display:none;bottom:2%;right:2%;position:fixed;"><i class="fas fa-arrow-circle-up"></i></div></div></div>
+</body><script src="/markbind/js/bootstrap-utility.min.js"></script>
+<script src="/markbind/js/polyfill.min.js"></script>
+<script src="/markbind/js/vue.min.js"></script>
+<script src="/markbind/js/markbind.min.js"></script>
+<script src="globalState.page-vue-render.js"></script>
+<script>
+  MarkBind.setupWithSearch()
+</script>
+    <script type="module">
+    import mermaid from 'https://unpkg.com/mermaid@10/dist/mermaid.esm.min.mjs';
+    document.addEventListener('DOMContentLoaded', () => {
+      mermaid.initialize({});
+      Vue.directive('mermaid', {
+        inserted: function(el) {
+          mermaid.run({
+            nodes: [el]
+          });
+        }
+      });
+    });
+  </script>
+</html>

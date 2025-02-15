@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="generator" content="MarkBind 5.5.3">
+    <meta name="viewport" content="width=device-width, initial-scale=1"><title>Home Page</title> <link rel="stylesheet" href="/markbind/css/bootstrap.min.css"> <link rel="stylesheet" href="/markbind/fontawesome/css/all.min.css"><link rel="stylesheet" href="/markbind/css/codeblock-dark.min.css"><link rel="stylesheet" href="/markbind/css/markbind.min.css"><link rel="stylesheet" href="/plugins/markbind-plugin-anchors/markbind-plugin-anchors.css"><link rel="stylesheet" href="/plugins/markbind-plugin-tree/markbind-plugin-tree.css">
+    
+  <link rel="stylesheet" href="/stylesheets/main.css">
+</head>
+<script>
+  const baseUrl = ''
+</script>
+<body >
+<div id="app" data-server-rendered="true"><header sticky=""><div data-v-7c0fd418><nav class="navbar navbar-expand-md d-print-none navbar-dark bg-dark" data-v-7c0fd418><div class="container-fluid" data-v-7c0fd418><div class="navbar-left" data-v-7c0fd418><a href="/index.html" title="Home" class="navbar-brand" data-v-7c0fd418>SQLancer Main</a></div> <div class="navbar-default" data-v-7c0fd418><ul class="navbar-nav me-auto mt-2 mt-lg-0" data-v-7c0fd418> <li data-v-7c0fd418><a href="/databaseProvider.html" class="nav-link" data-v-7c0fd418>DatabaseProvider</a></li> <li data-v-7c0fd418><a href="/globalState.html" class="nav-link" data-v-7c0fd418>GlobalState</a></li> <li data-v-7c0fd418><a href="/query.html" class="nav-link" data-v-7c0fd418>Query, SQLQueryAdapter</a></li> <li data-v-7c0fd418><a href="/statementExecutor.html" class="nav-link" data-v-7c0fd418>StatementExecutor</a></li> <li data-v-7c0fd418><a href="/SQLite.html" class="nav-link" data-v-7c0fd418>SQLite</a></li></ul></div> <!----></div></nav> <div class="lower-navbar-container" style="display:none;" data-v-7c0fd418><!----> <!----></div></div></header> <div id="flex-body"><div id="content-wrapper"><h3 id="databaseprovider">DatabaseProvider<a href="#databaseprovider" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h3> <p>The DatabaseProvider interface is a core component of SQLancer, defining the contract for DBMS-specific implementations (e.g., MySQL, PostgreSQL). It provides methods for <strong>creating databases, generating and testing queries, and managing logging and reproducibility</strong>.</p> <div class="mermaid">
+sequenceDiagram
+    participant DBMSExecutor
+    participant DatabaseProvider
+    participant GlobalState
+    participant QueryManager
+    participant StateLogger
+    participant Reproducer
+
+    DBMSExecutor-&gt;&gt;DatabaseProvider: createDatabase(globalState)
+    DatabaseProvider-&gt;&gt;GlobalState: Initialize database
+    DatabaseProvider--&gt;&gt;DBMSExecutor: Return connection
+    DBMSExecutor-&gt;&gt;DatabaseProvider: generateAndTestDatabase(globalState)
+    DatabaseProvider-&gt;&gt;QueryManager: Execute queries
+    QueryManager-&gt;&gt;StateLogger: Log queries and results
+    alt If bug is found
+        DatabaseProvider-&gt;&gt;Reproducer: Create reproducer
+        DatabaseProvider--&gt;&gt;DBMSExecutor: Return reproducer
+    end
+</div> <h3 id="provideradapter">ProviderAdapter<a href="#provideradapter" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h3> <p>The ProviderAdapter class is an abstract base class that implements the DatabaseProvider interface and provides common functionality for managing databases, test oracles, and query plan guidance (QPG). It is designed to be extended by DBMS-specific implementations (e.g., MySQL, PostgreSQL).</p> <div class="mermaid">
+sequenceDiagram
+    participant DBMSExecutor
+    participant ProviderAdapter
+    participant GlobalState
+    participant TestOracle
+    participant QueryManager
+    participant StateLogger
+    participant Reproducer
+
+    DBMSExecutor-&gt;&gt;ProviderAdapter: generateAndTestDatabase(globalState)
+    ProviderAdapter-&gt;&gt;GlobalState: generateDatabase()
+    ProviderAdapter-&gt;&gt;GlobalState: checkViewsAreValid()
+    ProviderAdapter-&gt;&gt;QueryManager: incrementCreateDatabase()
+    ProviderAdapter-&gt;&gt;ProviderAdapter: getTestOracle(globalState)
+    ProviderAdapter-&gt;&gt;TestOracle: create(globalState)
+    TestOracle--&gt;&gt;ProviderAdapter: Return oracle
+    loop For each query
+        ProviderAdapter-&gt;&gt;TestOracle: check()
+        TestOracle-&gt;&gt;StateLogger: Log query and result
+        alt If bug is found
+            TestOracle-&gt;&gt;Reproducer: Create reproducer
+            Reproducer--&gt;&gt;ProviderAdapter: Return reproducer
+        end
+    end
+    ProviderAdapter--&gt;&gt;DBMSExecutor: Return reproducer (if bug found)
+</div> <h4 id="generatedatabase">generateDatabase()<a href="#generatedatabase" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h4> <p>This method is implemented by specific database implementations, but look at how it is implemented for SQLite (<code class="hljs inline no-lang">SQLite3Provider.generateDatabase()</code>). (In SQLite Tab)</p> <h3 id="sqlprovideradapter">SQLProviderAdapter<a href="#sqlprovideradapter" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h3> <p>The SQLProviderAdapter class is an abstract base class that extends ProviderAdapter and provides SQL-specific functionality for managing databases, views, and logging. It is designed to be extended by DBMS-specific implementations (e.g., MySQL, PostgreSQL).</p> <div class="mermaid">
+sequenceDiagram
+    participant DBMSExecutor
+    participant SQLProviderAdapter
+    participant GlobalState
+    participant SQLQueryAdapter
+    participant StateLogger
+
+    DBMSExecutor-&gt;&gt;SQLProviderAdapter: checkViewsAreValid(globalState)
+    SQLProviderAdapter-&gt;&gt;GlobalState: getSchema().getViews()
+    GlobalState--&gt;&gt;SQLProviderAdapter: Return list of views
+    loop For each view
+        SQLProviderAdapter-&gt;&gt;SQLQueryAdapter: new SQLQueryAdapter(&quot;SELECT 1 FROM view LIMIT 1&quot;)
+        SQLProviderAdapter-&gt;&gt;SQLQueryAdapter: execute(globalState)
+        alt If view is invalid
+            SQLProviderAdapter-&gt;&gt;SQLProviderAdapter: dropView(globalState, viewName)
+            SQLProviderAdapter-&gt;&gt;SQLQueryAdapter: new SQLQueryAdapter(&quot;DROP VIEW viewName&quot;)
+            SQLProviderAdapter-&gt;&gt;GlobalState: executeStatement(dropViewQuery)
+        end
+    end
+    SQLProviderAdapter--&gt;&gt;DBMSExecutor: Views validated or dropped
+</div></div> <div aria-hidden="true" class="scroll-top-button fa-lg d-print-none" style="display:none;bottom:2%;right:2%;position:fixed;"><i class="fas fa-arrow-circle-up"></i></div></div></div>
+</body><script src="/markbind/js/bootstrap-utility.min.js"></script>
+<script src="/markbind/js/polyfill.min.js"></script>
+<script src="/markbind/js/vue.min.js"></script>
+<script src="/markbind/js/markbind.min.js"></script>
+<script src="databaseProvider.page-vue-render.js"></script>
+<script>
+  MarkBind.setupWithSearch()
+</script>
+    <script type="module">
+    import mermaid from 'https://unpkg.com/mermaid@10/dist/mermaid.esm.min.mjs';
+    document.addEventListener('DOMContentLoaded', () => {
+      mermaid.initialize({});
+      Vue.directive('mermaid', {
+        inserted: function(el) {
+          mermaid.run({
+            nodes: [el]
+          });
+        }
+      });
+    });
+  </script>
+</html>

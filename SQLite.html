@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="generator" content="MarkBind 5.5.3">
+    <meta name="viewport" content="width=device-width, initial-scale=1"><title>SQLite</title> <link rel="stylesheet" href="/markbind/css/bootstrap.min.css"> <link rel="stylesheet" href="/markbind/fontawesome/css/all.min.css"><link rel="stylesheet" href="/markbind/css/codeblock-dark.min.css"><link rel="stylesheet" href="/markbind/css/markbind.min.css"><link rel="stylesheet" href="/plugins/markbind-plugin-anchors/markbind-plugin-anchors.css"><link rel="stylesheet" href="/plugins/markbind-plugin-tree/markbind-plugin-tree.css">
+    
+  <link rel="stylesheet" href="/stylesheets/main.css">
+</head>
+<script>
+  const baseUrl = ''
+</script>
+<body >
+<div id="app" data-server-rendered="true"><header sticky=""><div data-v-7c0fd418><nav class="navbar navbar-expand-md d-print-none navbar-dark bg-dark" data-v-7c0fd418><div class="container-fluid" data-v-7c0fd418><div class="navbar-left" data-v-7c0fd418><a href="/index.html" title="Home" class="navbar-brand" data-v-7c0fd418>SQLancer Main</a></div> <div class="navbar-default" data-v-7c0fd418><ul class="navbar-nav me-auto mt-2 mt-lg-0" data-v-7c0fd418> <li data-v-7c0fd418><a href="/databaseProvider.html" class="nav-link" data-v-7c0fd418>DatabaseProvider</a></li> <li data-v-7c0fd418><a href="/globalState.html" class="nav-link" data-v-7c0fd418>GlobalState</a></li> <li data-v-7c0fd418><a href="/query.html" class="nav-link" data-v-7c0fd418>Query, SQLQueryAdapter</a></li> <li data-v-7c0fd418><a href="/statementExecutor.html" class="nav-link" data-v-7c0fd418>StatementExecutor</a></li> <li data-v-7c0fd418><a href="/SQLite.html" class="nav-link" data-v-7c0fd418>SQLite</a></li></ul></div> <!----></div></nav> <div class="lower-navbar-container" style="display:none;" data-v-7c0fd418><!----> <!----></div></div></header> <div id="flex-body"><div id="content-wrapper"><h3 id="sqlite3-provider">SQLite3 Provider<a href="#sqlite3-provider" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h3> <p>It handles Database initialization, table creation, statement execution (e.g to insert rows), transaction handling (logical units of work).</p> <p>The key method here is <code class="hljs inline no-lang">generateDatabase</code>. This generates the tables and populates the tables using <code class="hljs inline no-lang">executeStatements</code>.</p> <div class="mermaid">
+sequenceDiagram
+    participant DBMSExecutor
+    participant SQLite3Provider
+    participant SQLite3GlobalState
+    participant SQLQueryAdapter
+    participant SQLConnection
+    participant StatementExecutor
+    participant SQLite3Table
+    participant SQLite3Schema
+
+    DBMSExecutor-&gt;&gt;SQLite3Provider: generateDatabase(globalState)
+    SQLite3Provider-&gt;&gt;SQLite3GlobalState: addSensiblePragmaDefaults()
+    SQLite3Provider-&gt;&gt;SQLite3GlobalState: executeStatement(pragmaQuery)
+    loop For each table to create
+        SQLite3Provider-&gt;&gt;SQLite3Provider: getTableQuery(globalState, i)
+        SQLite3Provider-&gt;&gt;SQLite3GlobalState: executeStatement(tableQuery)
+    end
+    SQLite3Provider-&gt;&gt;StatementExecutor: executeStatements()
+    StatementExecutor-&gt;&gt;SQLite3Provider: mapActions(globalState, action)
+    loop For each action
+        StatementExecutor-&gt;&gt;SQLite3Provider: getQuery(globalState)
+        SQLite3Provider-&gt;&gt;SQLite3GlobalState: executeStatement(query)
+    end
+    SQLite3Provider-&gt;&gt;SQLite3GlobalState: executeStatement(commitQuery)
+    SQLite3Provider-&gt;&gt;SQLite3GlobalState: executeStatement(rollbackQuery)
+    SQLite3Provider--&gt;&gt;DBMSExecutor: Database generated
+</div> <h3 id="sqlite3insertgenerator">SQLite3InsertGenerator<a href="#sqlite3insertgenerator" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h3> <p>The SQLite3InsertGenerator class is responsible for generating SQL INSERT statements to populate tables in an SQLite3 database. It is used during the database generation process to insert rows into tables, ensuring that the database is populated with data for testing purposes.</p> <div class="mermaid">
+sequenceDiagram
+    participant SQLite3Provider
+    participant SQLite3InsertGenerator
+    participant SQLite3GlobalState
+    participant SQLite3Table
+    participant SQLite3Column
+    participant SQLite3ExpressionGenerator
+    participant SQLQueryAdapter
+
+    SQLite3Provider-&gt;&gt;SQLite3InsertGenerator: insertRow(globalState, table)
+    SQLite3InsertGenerator-&gt;&gt;SQLite3InsertGenerator: insertRow(table)
+    SQLite3InsertGenerator-&gt;&gt;SQLite3Table: getRandomNonEmptyColumnSubset()
+    SQLite3Table--&gt;&gt;SQLite3InsertGenerator: Return columns
+    SQLite3InsertGenerator-&gt;&gt;SQLite3ExpressionGenerator: getRandomLiteralValue(globalState)
+    SQLite3ExpressionGenerator--&gt;&gt;SQLite3InsertGenerator: Return literal value
+    SQLite3InsertGenerator-&gt;&gt;SQLite3ToStringVisitor: visit(literal)
+    SQLite3ToStringVisitor--&gt;&gt;SQLite3InsertGenerator: Return string representation
+    SQLite3InsertGenerator-&gt;&gt;SQLQueryAdapter: new SQLQueryAdapter(query, errors, true)
+    SQLQueryAdapter--&gt;&gt;SQLite3Provider: Return SQLQueryAdapter
+</div></div> <div aria-hidden="true" class="scroll-top-button fa-lg d-print-none" style="display:none;bottom:2%;right:2%;position:fixed;"><i class="fas fa-arrow-circle-up"></i></div></div></div>
+</body><script src="/markbind/js/bootstrap-utility.min.js"></script>
+<script src="/markbind/js/polyfill.min.js"></script>
+<script src="/markbind/js/vue.min.js"></script>
+<script src="/markbind/js/markbind.min.js"></script>
+<script src="SQLite.page-vue-render.js"></script>
+<script>
+  MarkBind.setupWithSearch()
+</script>
+    <script type="module">
+    import mermaid from 'https://unpkg.com/mermaid@10/dist/mermaid.esm.min.mjs';
+    document.addEventListener('DOMContentLoaded', () => {
+      mermaid.initialize({});
+      Vue.directive('mermaid', {
+        inserted: function(el) {
+          mermaid.run({
+            nodes: [el]
+          });
+        }
+      });
+    });
+  </script>
+</html>

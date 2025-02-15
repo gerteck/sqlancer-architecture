@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="generator" content="MarkBind 5.5.3">
+    <meta name="viewport" content="width=device-width, initial-scale=1"><title>StatementExecutor</title> <link rel="stylesheet" href="/markbind/css/bootstrap.min.css"> <link rel="stylesheet" href="/markbind/fontawesome/css/all.min.css"><link rel="stylesheet" href="/markbind/css/codeblock-dark.min.css"><link rel="stylesheet" href="/markbind/css/markbind.min.css"><link rel="stylesheet" href="/plugins/markbind-plugin-anchors/markbind-plugin-anchors.css"><link rel="stylesheet" href="/plugins/markbind-plugin-tree/markbind-plugin-tree.css">
+    
+  <link rel="stylesheet" href="/stylesheets/main.css">
+</head>
+<script>
+  const baseUrl = ''
+</script>
+<body >
+<div id="app" data-server-rendered="true"><header sticky=""><div data-v-7c0fd418><nav class="navbar navbar-expand-md d-print-none navbar-dark bg-dark" data-v-7c0fd418><div class="container-fluid" data-v-7c0fd418><div class="navbar-left" data-v-7c0fd418><a href="/index.html" title="Home" class="navbar-brand" data-v-7c0fd418>SQLancer Main</a></div> <div class="navbar-default" data-v-7c0fd418><ul class="navbar-nav me-auto mt-2 mt-lg-0" data-v-7c0fd418> <li data-v-7c0fd418><a href="/databaseProvider.html" class="nav-link" data-v-7c0fd418>DatabaseProvider</a></li> <li data-v-7c0fd418><a href="/globalState.html" class="nav-link" data-v-7c0fd418>GlobalState</a></li> <li data-v-7c0fd418><a href="/query.html" class="nav-link" data-v-7c0fd418>Query, SQLQueryAdapter</a></li> <li data-v-7c0fd418><a href="/statementExecutor.html" class="nav-link" data-v-7c0fd418>StatementExecutor</a></li> <li data-v-7c0fd418><a href="/SQLite.html" class="nav-link" data-v-7c0fd418>SQLite</a></li></ul></div> <!----></div></nav> <div class="lower-navbar-container" style="display:none;" data-v-7c0fd418><!----> <!----></div></div></header> <div id="flex-body"><div id="content-wrapper"><h2 id="statement-executor">Statement Executor<a href="#statement-executor" onclick="event.stopPropagation()" class="fa fa-anchor"></a></h2> <p>The StatementExecutor class is responsible for executing a set of actions (e.g., SQL queries) in a randomized manner. It is used in SQLancer to generate and execute a sequence of database operations (e.g., INSERT, UPDATE, DELETE) based on a weighted random selection.</p> <p><code class="hljs inline no-lang">DBMSExecutor</code> calls <code class="hljs inline no-lang">executeStatements()</code> of <code class="hljs inline no-lang">StatementExecutor</code>. The StatementExecutor initializes the <code class="hljs inline no-lang">nrRemaining</code> array and <code class="hljs inline no-lang">availableActions</code> list based on the number of times each action should be performed. This list is based on the actions defined when creating the Executor instance.</p> <p>The StatementExecutor uses a weighted random selection to <em>choose the next action to execute</em>. The ActionMapper is used to determine how many times each action should be performed.</p> <p><strong>Query Execution</strong>:
+The StatementExecutor retrieves the query for the selected action using the getQuery() method. The query is executed using the GlobalState. If the query affects the schema, the StatementExecutor updates the schema using the updateSchema() method.</p> <p>The StatementExecutor continues executing actions until all actions have been performed. Once all actions are executed, the StatementExecutor returns control to the DBMSExecutor.</p> <div class="mermaid">
+sequenceDiagram
+    participant DBMSExecutor
+    participant StatementExecutor
+    participant GlobalState
+    participant AbstractAction
+    participant Query
+    participant AfterQueryAction
+
+    DBMSExecutor-&gt;&gt;StatementExecutor: executeStatements()
+    StatementExecutor-&gt;&gt;StatementExecutor: Initialize nrRemaining and availableActions
+    loop For each action
+        StatementExecutor-&gt;&gt;ActionMapper: map(globalState, action)
+        ActionMapper--&gt;&gt;StatementExecutor: Return nrPerformed
+        StatementExecutor-&gt;&gt;StatementExecutor: Update nrRemaining and total
+    end
+    loop While total &gt; 0
+        StatementExecutor-&gt;&gt;Randomly: getInteger(0, total)
+        Randomly--&gt;&gt;StatementExecutor: Return selection
+        StatementExecutor-&gt;&gt;StatementExecutor: Select nextAction based on selection
+        StatementExecutor-&gt;&gt;StatementExecutor: Decrement nrRemaining and total
+        StatementExecutor-&gt;&gt;AbstractAction: getQuery(globalState)
+        AbstractAction--&gt;&gt;StatementExecutor: Return query
+        StatementExecutor-&gt;&gt;GlobalState: executeStatement(query)
+        alt If query affects schema
+            StatementExecutor-&gt;&gt;GlobalState: updateSchema()
+            StatementExecutor-&gt;&gt;AfterQueryAction: notify(query)
+        end
+    end
+    StatementExecutor--&gt;&gt;DBMSExecutor: Statements executed
+</div></div> <div aria-hidden="true" class="scroll-top-button fa-lg d-print-none" style="display:none;bottom:2%;right:2%;position:fixed;"><i class="fas fa-arrow-circle-up"></i></div></div></div>
+</body><script src="/markbind/js/bootstrap-utility.min.js"></script>
+<script src="/markbind/js/polyfill.min.js"></script>
+<script src="/markbind/js/vue.min.js"></script>
+<script src="/markbind/js/markbind.min.js"></script>
+<script src="statementExecutor.page-vue-render.js"></script>
+<script>
+  MarkBind.setupWithSearch()
+</script>
+    <script type="module">
+    import mermaid from 'https://unpkg.com/mermaid@10/dist/mermaid.esm.min.mjs';
+    document.addEventListener('DOMContentLoaded', () => {
+      mermaid.initialize({});
+      Vue.directive('mermaid', {
+        inserted: function(el) {
+          mermaid.run({
+            nodes: [el]
+          });
+        }
+      });
+    });
+  </script>
+</html>
