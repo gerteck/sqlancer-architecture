@@ -43,6 +43,10 @@ sequenceDiagram
     ExecutorService-->>Main: Confirm shutdown
 </mermaid>
 
+<br>
+
+Running the tests for each DBMS is done through `DBMSExecutor.run()`.
+
 ### DBMSExecutor.run()
 
 <mermaid>
