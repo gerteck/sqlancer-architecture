@@ -54,6 +54,12 @@
       "headingKeywords": {}
     },
     {
+      "src": "sqlancerClassDiagram.md",
+      "title": "SQLancer Class Diagram",
+      "headings": {},
+      "headingKeywords": {}
+    },
+    {
       "src": "statementExecutor.md",
       "title": "StatementExecutor",
       "headings": {
