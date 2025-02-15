@@ -7,6 +7,7 @@
 
 
 ### SQLancer  Main.
+* **DBMSExecutor, ExecutorFactory, StateLogger, QueryManager**
 
 First let's look at the main entry point and core logic for SQLancer. Test DBMS by generating random SQL queries and databases to check for bugs or inconsistencies in DBMS.
 
